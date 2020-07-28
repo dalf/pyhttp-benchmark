@@ -12,6 +12,7 @@ URL = [
 
 
 def bench_requests():
+    import random
     import requests
     import threading
     from uuid import uuid4
@@ -19,10 +20,12 @@ def bench_requests():
     def do_request(session, url):
         session.get(url)
 
-    session = requests.Session()
+    # four uwsgi processes --> four sessions and four connection pools
+    session_list = [ requests.Session(), requests.Session(), requests.Session(), requests.Session() ]
     with report_time("FuturesSession w/ max workers"):
         search_id = uuid4().__str__()
         for url in URL:
+            session = random.choice(session_list)
             th = threading.Thread(
                 target = do_request,
                 args = (session, url),
@@ -45,7 +48,7 @@ async def bench_aiohttp():
 
     async with async_report_time("aiohttp"):
         async with aiohttp.ClientSession() as session:
-            r = await asyncio.gather(*[get(session, url) for url in URL])
+            await asyncio.gather(*[get(session, url) for url in URL])
 
 
 async def bench_httpx():
@@ -54,7 +57,7 @@ async def bench_httpx():
 
     async with async_report_time("httpx"):
         async with httpx.AsyncClient() as client:
-            r = await asyncio.gather(*[client.get(url) for url in URL])
+            await asyncio.gather(*[client.get(url) for url in URL])
 
 
 def main():
