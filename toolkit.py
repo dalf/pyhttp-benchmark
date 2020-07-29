@@ -21,6 +21,9 @@ def print_stats():
 
     Run in the main process
     """
+    print("|                                 | Runtime |      |       | Cputime |      |       |")
+    print("|---------------------------------|---------|------|-------|---------|------|-------|")
+    print("|                                 |  median | mean | stdev |  median | mean | stdev |")
     for test, stat in STATS.items():
         runtime = list(map(lambda s: s[0], stat))
         cputime = list(map(lambda s: s[1], stat))
@@ -32,16 +35,17 @@ def print_stats():
         cputime_median = statistics.median(cputime)
         cputime_mean = statistics.mean(cputime)
         cputime_stdev = statistics.stdev(cputime)
-        print("%-30s runtime[ median: %.2fs  mean: %.2fs  stdev: %.2fs ] cputime[ median: %.2fs  mean: %.2fs  stdev: %.2fs ]" % (test, runtime_median, runtime_mean, runtime_stdev, cputime_median, cputime_mean, cputime_stdev))
+        print("| %-31s |    %.2f | %.2f |  %.2f |   %.2f |  %.2f |  %.2f |" % (test, runtime_median, runtime_mean, runtime_stdev, cputime_median, cputime_mean, cputime_stdev))
 
 
-def _read_and_add_measure(tempname, print_prefix=""):
+def _read_and_add_measure(tempname, print_prefix="", no_print=False):
     """Run in the main process"""
     with open(tempname, 'rb') as f:
         measure = pickle.load(f)
         stat = STATS.setdefault(measure[0], list())
         stat.append((measure[1], measure[2]))
-        print("%-10s %-30s runtime: %.2f cputime: %.2f" % (print_prefix, measure[0], measure[1], measure[2]))
+        if not no_print:
+            print("%-10s %-30s runtime: %.2f cputime: %.2f" % (print_prefix, measure[0], measure[1], measure[2]))
 
 
 def _write_measure(test, runtime, cputime):
@@ -112,7 +116,7 @@ def _wrapper_sync(stat_filename, f, *args):
     gc.enable()
 
 
-def run(func, *args, print_prefix=""):
+def run(func, *args, print_prefix="", no_print=False):
     """
     Spawn a new Python process: no preexisting ssl connection.
     """
@@ -125,7 +129,7 @@ def run(func, *args, print_prefix=""):
             process.start()
             process.join()
             if process.exitcode == 0:
-                _read_and_add_measure(stat_filename, print_prefix=print_prefix)
+                _read_and_add_measure(stat_filename, print_prefix=print_prefix, no_print=no_print)
         finally:
             if process.is_alive():
                 process.kill()

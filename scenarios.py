@@ -23,7 +23,7 @@ EXTERNAL = {
 
 LOCALHOST = {
     "name": "Localhost, 8KB responses",
-    "tries": 10,
+    "tries": 50,
     "cafile": "server/server.crt",
     "url1": [
         "https://localhost:4001/800/8192",
@@ -46,7 +46,7 @@ LOCALHOST = {
 
 LOCALHOST2 = {
     "name": "Localhost, 400KB responses",
-    "tries": 10,
+    "tries": 50,
     "cafile": "server/server.crt",
     "url1": [
         "https://localhost:4001/800/400000",
@@ -69,7 +69,7 @@ LOCALHOST2 = {
 
 LOCALHOST3 = {
     "name": "Localhost, 100 requests at the same time",
-    "tries": 10,
+    "tries": 50,
     "cafile": "server/server.crt",
     "url1": [
         "https://localhost:4001/800/2048",

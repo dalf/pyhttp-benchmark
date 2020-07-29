@@ -92,18 +92,20 @@ async def bench_httpx(url1, delay_in_between, url2, cafile):
 
 def run_scenario(scenario):
     print("\n%s\n" % scenario['name'])
-    for i in range(1, scenario["tries"]+1):
+    ten_of_tries = int(scenario["tries"] / 10)
+    for i in range(scenario["tries"]):
         run_bench = lambda f: run(f, \
                                   scenario["url1"], \
                                   scenario["delay_in_between"], \
                                   scenario["url2"], \
                                   scenario["cafile"], \
-                                  print_prefix="%2i / %2i" % (i, scenario["tries"]))
+                                  print_prefix="%2i / %2i" % (i+1, scenario["tries"]), \
+                                  no_print=i%ten_of_tries>0)
         run_bench(bench_httpx)
         run_bench(bench_aiohttp)
         run_bench(bench_requests_four_sessions)
         #run_bench(bench_requests_one_session)
-    print("\n%s\n" % scenario['name'])
+    print("\n## Scenario: %s\n" % scenario['name'])
     print_stats()
     print("\n")
 
@@ -114,6 +116,7 @@ def main():
     run_scenario(scenarios.LOCALHOST)
     run_scenario(scenarios.LOCALHOST2)
     run_scenario(scenarios.LOCALHOST3)
+    run_scenario(scenarios.EXTERNAL)
 
 
 if __name__ == '__main__':
