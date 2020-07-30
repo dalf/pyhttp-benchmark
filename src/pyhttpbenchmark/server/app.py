@@ -13,8 +13,8 @@ response_cache = dict()
 
 
 async def answer(request):
-    delay = request.path_params['delay']
-    size = request.path_params['size']
+    delay = request.path_params["delay"]
+    size = request.path_params["size"]
     await asyncio.sleep(delay / 1000)
     if size in response_cache:
         response = response_cache[size]
@@ -24,9 +24,12 @@ async def answer(request):
     return PlainTextResponse(response)
 
 
-app = Starlette(debug=True, routes=[
-    Route('/{delay:int}/{size:int}', answer),
-])
+app = Starlette(debug=True, routes=[Route("/{delay:int}/{size:int}", answer), ])
+
+
+def main(host, port):
+    uvicorn.run("pyhttpbenchmark.server.app:app", host=host, port=port, log_level="error", workers=4)
+
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="127.0.0.1", port=5000, log_level="error", workers=4)
+    main("127.0.0.1", 5000)

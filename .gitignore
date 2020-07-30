@@ -131,4 +131,5 @@ dmypy.json
 .pyre/
 
 #
-server/caddy
+pyhttpbenchmark/output
+

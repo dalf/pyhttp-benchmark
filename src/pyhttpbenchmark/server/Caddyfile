@@ -3,6 +3,11 @@
 }
 
 (server) {
+  log {
+    output stdout
+    level ERROR
+  }
+
   tls server.crt server.key
   reverse_proxy localhost:5000
   encode zstd gzip
@@ -32,6 +37,10 @@
   }
 }
 
+https://localhost:4000 {
+  import server
+}
+
 https://localhost:4001 {
   import server
 }
@@ -53,5 +62,17 @@ https://localhost:4005 {
 }
 
 https://localhost:4006 {
+  import server
+}
+
+https://localhost:4007 {
+  import server
+}
+
+https://localhost:4008 {
+  import server
+}
+
+https://localhost:4009 {
   import server
 }
