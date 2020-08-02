@@ -65,9 +65,10 @@ class Stats:
     def __init__(self):
         self.values = dict()
 
-    def add(self, case: model.LoadedCase, stat: pstats.Stats) -> None:
-        stat_for_case = self.values.setdefault(case, pstats.Stats())
-        stat_for_case.add(stat)
+    def add(self, case: model.LoadedCase, stat: typing.Optional[pstats.Stats]) -> None:
+        if stat:
+            stat_for_case = self.values.setdefault(case, pstats.Stats())
+            stat_for_case.add(stat)
 
     def save(self, scenario: model.Scenario):
         for case, stat in self.values.items():

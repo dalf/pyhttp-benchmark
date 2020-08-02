@@ -12,34 +12,37 @@ from . import metrics, model, case as case_module
 spawn = multiprocessing.get_context("spawn")
 
 
-def _read_measure(tempname: str) -> typing.Any:
+def _read_measure(tempname: typing.Optional[str]) -> typing.Any:
     """Run in the main process"""
-    with open(tempname, "rb") as f:
-        return pickle.load(f)
+    if tempname:
+        with open(tempname, "rb") as f:
+            return pickle.load(f)
+    return None
 
 
-def _read_stats(tempname: str) -> pstats.Stats:
+def _read_stats(tempname: typing.Optional[str]) -> typing.Optional[pstats.Stats]:
     """Run in the main process"""
-    stats = pstats.Stats()
     if tempname and os.path.getsize(tempname) > 0:
+        stats = pstats.Stats()
         stats.load_stats(tempname)
-    return stats
+        return stats
+    return None
 
 
 @contextlib.contextmanager
-def optional_tempfilename(enable=True) -> typing.Generator[str, None, None]:
+def optional_tempfilename(enable=True) -> typing.Generator[typing.Optional[str], None, None]:
     filename = None
     if enable:
         _, filename = tempfile.mkstemp()
     try:
         yield filename
     finally:
-        if enable:
+        if filename:
             os.remove(filename)
 
 
 def run(case: model.LoadedCase, scenario: model.Scenario, record_profile: bool,
-        sslconfig: model.SslConfig) -> typing.Tuple[metrics.Measure, pstats.Stats]:
+        sslconfig: model.SslConfig) -> typing.Tuple[metrics.Measure, typing.Optional[pstats.Stats]]:
     """
     Spawn a new Python process
     """
