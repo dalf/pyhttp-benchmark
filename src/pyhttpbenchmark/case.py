@@ -1,4 +1,5 @@
 import cProfile
+import sys
 import gc
 import contextlib
 import importlib
@@ -88,6 +89,13 @@ def _call_async_main(main, *args) -> None:
         loop.run_until_complete(main(*args))
 
 
+def _call_trio_main(main, *args) -> None:
+    import trio
+
+    with _no_gc():
+        trio.run(main, *args)
+
+
 def _call_sync_main(main, *args) -> None:
     with _no_gc():
         main(*args)
@@ -109,5 +117,11 @@ def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scen
 
     module = _import_module(case)
     main = module.main
-    call_main = _call_async_main if inspect.iscoroutinefunction(main) else _call_sync_main
+    if not inspect.iscoroutinefunction(main):
+        call_main = _call_sync_main
+    elif 'trio' in sys.modules:
+        call_main = _call_trio_main
+    else:
+        call_main = _call_async_main
+
     call_main(main, scenario, sslconfig)
