@@ -1,3 +1,4 @@
+import typing
 import cProfile
 import sys
 import gc
@@ -16,17 +17,18 @@ MEASURE_FILENAME = None
 STATS_FILENAME = None
 
 
-def _save(runtime: int, cputime: int, pr) -> None:
+def _save(runtime: float, cputime: float, pr) -> None:
     global STATS_FILENAME, MEASURE_FILENAME
     measure = Measure(runtime=runtime, cputime=cputime)
     if STATS_FILENAME:
         pr.dump_stats(STATS_FILENAME)
-    with open(MEASURE_FILENAME, "wb") as f:
-        f.write(pickle.dumps(measure))
+    if MEASURE_FILENAME:
+        with open(MEASURE_FILENAME, "wb") as f:
+            f.write(pickle.dumps(measure))
 
 
 @contextlib.contextmanager
-def record_measure() -> None:
+def record_measure() -> typing.Iterator[None]:
     """
     Record time (sync version)
     """
@@ -48,7 +50,7 @@ def record_measure() -> None:
 
 
 @asynccontextmanager
-async def async_record_measure() -> None:
+async def async_record_measure() -> typing.AsyncGenerator[None, None]:
     """
     Record time (async version)
     """
@@ -70,7 +72,7 @@ async def async_record_measure() -> None:
 
 
 @contextlib.contextmanager
-def _no_gc() -> None:
+def _no_gc() -> typing.Generator[None, None, None]:
     gc.collect()
     gc.disable()
     try:
@@ -81,7 +83,7 @@ def _no_gc() -> None:
 
 def _call_async_main(main, *args) -> None:
     import asyncio
-    import uvloop
+    import uvloop  # type: ignore
 
     uvloop.install()
     loop = asyncio.get_event_loop()
@@ -90,7 +92,7 @@ def _call_async_main(main, *args) -> None:
 
 
 def _call_trio_main(main, *args) -> None:
-    import trio
+    import trio  # type: ignore
 
     with _no_gc():
         trio.run(main, *args)
@@ -103,13 +105,14 @@ def _call_sync_main(main, *args) -> None:
 
 def _import_module(case: model.LoadedCase):
     # See: https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
-    spec = importlib.util.spec_from_file_location(case.package_name, case.path)
-    module_instance = importlib.util.module_from_spec(spec)
+    spec = importlib.util.spec_from_file_location(case.package_name, case.path)  # type: ignore
+    module_instance = importlib.util.module_from_spec(spec)  # type: ignore
     spec.loader.exec_module(module_instance)  # type: ignore
     return module_instance  # type: ignore
 
 
-def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scenario: model.Scenario, sslconfig: model.SslConfig) -> None:
+def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scenario: model.Scenario,
+        sslconfig: model.SslConfig) -> None:
     global MEASURE_FILENAME
     global STATS_FILENAME
     MEASURE_FILENAME = measure_filename

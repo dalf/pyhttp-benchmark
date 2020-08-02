@@ -1,18 +1,17 @@
 import typing
 import statistics
 import pstats
-from functools import reduce
 from . import model, output
 
 
 class Measure(typing.NamedTuple):
-    runtime: int
-    cputime: int
+    runtime: float
+    cputime: float
 
 
 class Metrics:
 
-    __dict__ = "values"
+    __slots__ = "values",
 
     def __init__(self):
         self.values = dict()
@@ -60,6 +59,9 @@ class Metrics:
 
 
 class Stats:
+
+    __slots__ = "values",
+
     def __init__(self):
         self.values = dict()
 

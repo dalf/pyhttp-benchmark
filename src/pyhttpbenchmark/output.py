@@ -17,10 +17,9 @@ def get_output_directory(relative_path: typing.Union[str, pathlib.Path], remove_
 
 
 def get_file(path: typing.Union[str, pathlib.Path]) -> pathlib.Path:
-    if type(path) == str:
-        path = pathlib.Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    return path
+    path_obj = typing.cast(pathlib.Path, path if type(path) == pathlib.Path else pathlib.Path(path))
+    path_obj.parent.mkdir(parents=True, exist_ok=True)
+    return path_obj
 
 
 def get_output_file(relative_path: typing.Union[str, pathlib.Path]) -> pathlib.Path:
@@ -28,8 +27,8 @@ def get_output_file(relative_path: typing.Union[str, pathlib.Path]) -> pathlib.P
 
 
 def get_prof_file(scenario: model.Scenario, case: model.LoadedCase) -> pathlib.Path:
-    return get_output_file("results") / f"{scenario.id}_{case.name}.prof"
+    return get_output_directory("results") / f"{scenario.id}_{case.name}.prof"
 
 
 def get_csv_file(scenario: model.Scenario) -> pathlib.Path:
-    return get_output_file("results") / f"{scenario.id}.csv"
+    return get_output_directory("results") / f"{scenario.id}.csv"

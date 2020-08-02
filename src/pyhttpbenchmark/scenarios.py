@@ -10,9 +10,9 @@ SCENARIOS += Scenario(
     steps=[
         StepRequests(
             urls=[
-                "https://fr.wikiversity.org/w/api.php?action=query&list=search&srsearch=linux&format=json&sroffset=0&srlimit=5&srwhat=text",
-                "https://fr.wikipedia.org/w/api.php?action=query&format=json&titles=linux%7CLinux&prop=extracts%7Cpageimages%7Cpageprops&ppprop=disambiguation&exintro&explaintext&pithumbsize=300&redirects",
-                "https://fr.wikiquote.org/w/api.php?action=query&list=search&srsearch=linux&format=json&sroffset=0&srlimit=5&srwhat=text",
+                "https://fr.wikiversity.org/w/api.php?action=query&list=search&srsearch=linux&format=json&sroffset=0&srlimit=5&srwhat=text",  # noqa
+                "https://fr.wikipedia.org/w/api.php?action=query&format=json&titles=linux%7CLinux&prop=extracts%7Cpageimages%7Cpageprops&ppprop=disambiguation&exintro&explaintext&pithumbsize=300&redirects",  # noqa
+                "https://fr.wikiquote.org/w/api.php?action=query&list=search&srsearch=linux&format=json&sroffset=0&srlimit=5&srwhat=text",  # noqa
                 "https://www.wikidata.org/w/index.php?search=linux&ns0=1",
                 "https://www.etymonline.com/search?page=1&q=linux",
                 "https://api.duckduckgo.com/?q=time&format=json&pretty=0&no_redirect=1&d=1",
@@ -21,9 +21,9 @@ SCENARIOS += Scenario(
         StepDelay(time=0.5),
         StepRequests(
             urls=[
-                "https://fr.wikiversity.org/w/api.php?action=query&list=search&srsearch=searx&format=json&sroffset=0&srlimit=5&srwhat=text",
-                "https://fr.wikipedia.org/w/api.php?action=query&format=json&titles=searx%7CLinux&prop=extracts%7Cpageimages%7Cpageprops&ppprop=disambiguation&exintro&explaintext&pithumbsize=300&redirects",
-                "https://fr.wikiquote.org/w/api.php?action=query&list=search&srsearch=searx&format=json&sroffset=0&srlimit=5&srwhat=text",
+                "https://fr.wikiversity.org/w/api.php?action=query&list=search&srsearch=searx&format=json&sroffset=0&srlimit=5&srwhat=text",  # noqa
+                "https://fr.wikipedia.org/w/api.php?action=query&format=json&titles=searx%7CLinux&prop=extracts%7Cpageimages%7Cpageprops&ppprop=disambiguation&exintro&explaintext&pithumbsize=300&redirects",  # noqa
+                "https://fr.wikiquote.org/w/api.php?action=query&list=search&srsearch=searx&format=json&sroffset=0&srlimit=5&srwhat=text",  # noqa
                 "https://www.wikidata.org/w/index.php?search=searx&ns0=1",
                 "https://www.etymonline.com/search?page=1&q=searx",
                 "https://api.duckduckgo.com/?q=searx&format=json&pretty=0&no_redirect=1&d=1",

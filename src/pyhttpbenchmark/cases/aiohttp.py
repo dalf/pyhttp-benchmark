@@ -1,3 +1,4 @@
+import typing
 import asyncio
 import aiohttp
 import ssl
@@ -29,12 +30,17 @@ async def step_request(loop, step, session, sslparam):
     return []
 
 
-handlers = {scenarios.StepDelay: step_delay, scenarios.StepRequests: step_requests, scenarios.StepRequest: step_request}
+handlers: typing.Dict[typing.Any,
+                      typing.Callable[[asyncio.events.AbstractEventLoop, typing.Any,
+                                       aiohttp.ClientSession,
+                                       typing.Optional[ssl.SSLContext]],
+                                      typing.Awaitable[typing.List[asyncio.Task]]]] =\
+    {scenarios.StepDelay: step_delay, scenarios.StepRequests: step_requests, scenarios.StepRequest: step_request}
 
 
 async def main(scenario: scenarios.Scenario, sslconfig: model.SslConfig) -> None:
     loop = asyncio.get_event_loop()
-    sslparam = ssl.create_default_context(cafile=sslconfig.local_ca_file) if scenario.local_ca else None
+    sslparam = ssl.create_default_context(cafile=str(sslconfig.local_ca_file)) if scenario.local_ca else None
     all_tasks = []
     async with aiohttp.ClientSession() as session:
         async with async_record_measure():

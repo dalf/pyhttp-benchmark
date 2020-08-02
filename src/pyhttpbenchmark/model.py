@@ -1,4 +1,5 @@
 import typing
+from dataclasses import dataclass
 import pathlib
 from collections import OrderedDict
 from . import cases
@@ -32,19 +33,23 @@ class LoadedCase(typing.NamedTuple):
         return cases.__package__ + '.' + self.name
 
 
+@dataclass(frozen=True)
 class Step:
     pass
 
 
-class StepDelay(Step, typing.NamedTuple):
-    time: int
+@dataclass(frozen=True)
+class StepDelay(Step):
+    time: float
 
 
-class StepRequests(Step, typing.NamedTuple):
+@dataclass(frozen=True)
+class StepRequests(Step):
     urls: typing.List[str]
 
 
-class StepRequest(Step, typing.NamedTuple):
+@dataclass(frozen=True)
+class StepRequest(Step):
     url: str
 
 
@@ -53,7 +58,7 @@ class Scenario(typing.NamedTuple):
     name: str
     tries: int
     local_ca: typing.Union[str, bool]
-    steps: typing.List[Step]
+    steps: typing.Sequence[Step]
 
 
 class ScenariosDict(OrderedDict):
@@ -61,5 +66,5 @@ class ScenariosDict(OrderedDict):
         self[scenario.id] = scenario
         return self
 
-    def subset(self, ids: typing.List[str]):
+    def subset(self, ids: typing.List[str]) -> "ScenariosDict":
         return ScenariosDict((id, self[id]) for id in ids)

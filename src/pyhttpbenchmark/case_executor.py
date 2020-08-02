@@ -1,9 +1,9 @@
+import typing
 import os
 import tempfile
 import pickle
 import multiprocessing
 import contextlib
-import typing
 import pstats
 
 from . import metrics, model, case as case_module
@@ -12,13 +12,13 @@ from . import metrics, model, case as case_module
 spawn = multiprocessing.get_context("spawn")
 
 
-def _read_measure(tempname):
+def _read_measure(tempname: str) -> typing.Any:
     """Run in the main process"""
     with open(tempname, "rb") as f:
         return pickle.load(f)
 
 
-def _read_stats(tempname):
+def _read_stats(tempname: str) -> pstats.Stats:
     """Run in the main process"""
     stats = pstats.Stats()
     if tempname and os.path.getsize(tempname) > 0:
@@ -27,7 +27,7 @@ def _read_stats(tempname):
 
 
 @contextlib.contextmanager
-def optional_tempfilename(enable=True):
+def optional_tempfilename(enable=True) -> typing.Generator[str, None, None]:
     filename = None
     if enable:
         _, filename = tempfile.mkstemp()
@@ -38,7 +38,8 @@ def optional_tempfilename(enable=True):
             os.remove(filename)
 
 
-def run(case: model.LoadedCase, scenario: model.Scenario, record_profile: bool, sslconfig: model.SslConfig) -> typing.Tuple[metrics.Measure, pstats.Stats]:
+def run(case: model.LoadedCase, scenario: model.Scenario, record_profile: bool,
+        sslconfig: model.SslConfig) -> typing.Tuple[metrics.Measure, pstats.Stats]:
     """
     Spawn a new Python process
     """
@@ -46,7 +47,7 @@ def run(case: model.LoadedCase, scenario: model.Scenario, record_profile: bool, 
         with optional_tempfilename(record_profile) as stats_filename:
             process_name = f"run_{scenario.id}_{case.name}"
             process = spawn.Process(name=process_name, target=case_module.run,
-                                    args=[measure_filename, stats_filename, case, scenario, sslconfig])
+                                    args=(measure_filename, stats_filename, case, scenario, sslconfig))
             try:
                 process.start()
                 process.join()

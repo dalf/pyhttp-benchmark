@@ -1,7 +1,7 @@
 import typing
 import httpx
 
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 from . import model, server, metrics, case_executor
 
@@ -16,7 +16,7 @@ def warm_up_server(scenario_list: typing.List[model.Scenario], sslconfig: model.
                 elif isinstance(step, model.StepRequests):
                     urls = urls | set(step.urls)
 
-    client = httpx.Client(verify=sslconfig.local_ca_file)
+    client = httpx.Client(verify=str(sslconfig.local_ca_file))
     for url in tqdm(urls, leave=False, disable=None, desc="Warming up the local server"):
         response = client.get(url)
         response.raise_for_status()

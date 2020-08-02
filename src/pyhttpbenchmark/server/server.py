@@ -1,3 +1,4 @@
+import typing
 import tarfile
 import tempfile
 import multiprocessing
@@ -68,7 +69,7 @@ def wait_for_url(url, timeout):
         try:
             response = httpx.get(url, verify=CA_FILE)
             response.raise_for_status()
-        except Exception as e:
+        except Exception:
             pass
         else:
             return
@@ -88,12 +89,13 @@ def start(server_config: model.ServerConfig, caddy_log_file):
     if not server_config.caddy_path.exists():
         download_caddy(server_config.caddy_path)
     process_caddy = subprocess.Popen(
-        [server_config.caddy_path, "run", "-config", CADDYFILE_PATH], cwd=CADDY_CWD, stdout=caddy_log_file, stderr=caddy_log_file,
+        (server_config.caddy_path, "run", "-config", CADDYFILE_PATH),
+        cwd=CADDY_CWD, stdout=caddy_log_file, stderr=caddy_log_file,
     )
 
     # app
     spawn = multiprocessing.get_context("spawn")
-    process_app = spawn.Process(target=app.main, args=["localhost", 5000])
+    process_app = spawn.Process(target=app.main, args=("localhost", 5000))
     process_app.start()
 
     wait_for_url("http://localhost:5000/0/1", 5)
@@ -101,7 +103,7 @@ def start(server_config: model.ServerConfig, caddy_log_file):
 
 
 @contextlib.contextmanager
-def server(server_config: model.ServerConfig) -> model.SslConfig:
+def server(server_config: model.ServerConfig) -> typing.Generator[model.SslConfig, None, None]:
     with open(server_config.caddy_log_path, "w", encoding="utf-8") as caddy_log_file:
         start(server_config, caddy_log_file)
         try:

@@ -9,6 +9,7 @@ setup(
     include_package_data=True,
     package_data={
         'src': [
+            'pyhttpbenchmark/py.typed',
             'pyhttpbenchmark/server/Caddyfile',
             'pyhttpbenchmark/server/server.key',
             'pyhttpbenchmark/server/server.crt',

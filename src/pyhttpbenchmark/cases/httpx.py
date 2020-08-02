@@ -1,3 +1,4 @@
+import typing
 from .. import model
 from ..case import async_record_measure
 
@@ -29,13 +30,18 @@ async def step_request(loop, step, client):
     return []
 
 
-handlers = {model.StepDelay: step_delay, model.StepRequests: step_requests, model.StepRequest: step_request}
+handlers: typing.Dict[typing.Any,
+                      typing.Callable[[asyncio.events.AbstractEventLoop,
+                                       typing.Any,
+                                       httpx.AsyncClient],
+                                      typing.Awaitable[typing.List[asyncio.Task]]]] =\
+    {model.StepDelay: step_delay, model.StepRequests: step_requests, model.StepRequest: step_request}
 
 
 async def main_partial(http2, scenario: model.Scenario, sslconfig: model.SslConfig) -> None:
     loop = asyncio.get_event_loop()
     all_tasks = []
-    verify = True if not scenario.local_ca else sslconfig.local_ca_file
+    verify: typing.Union[bool, str] = True if not scenario.local_ca else str(sslconfig.local_ca_file)
     async with httpx.AsyncClient(http2=http2, verify=verify) as client:
         async with async_record_measure():
             for step in scenario.steps:

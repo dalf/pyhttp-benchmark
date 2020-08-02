@@ -1,5 +1,6 @@
-import uvloop
-import uvicorn
+import typing
+import uvloop  # type: ignore
+import uvicorn  # type: ignore
 import asyncio
 from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
@@ -9,7 +10,7 @@ from os import urandom
 
 uvloop.install()
 
-response_cache = dict()
+response_cache: typing.Dict[int, bytes] = dict()
 
 
 async def answer(request):
