@@ -1,5 +1,6 @@
 from setuptools import find_packages, setup
 
+
 setup(
     name="pyhttpbenchmark",
     version="0.1",
@@ -15,15 +16,17 @@ setup(
         ]
     },
     install_requires=[
+        "aiohttp[speedups]==3.*",
+        "httpx==0.*",
+        "requests==2.*",
+        "uvloop==0.*",
+        "trio==0.*",
+        "click==7.*",
+        "uvicorn==0.*",
+        "starlette==0.*",
         "click==7.*",
         "snakeviz==2.*",
         "tqdm==4.*",
-        "uvloop==0.14.0",
-        "uvicorn==0.11.*",
-        "starlette==0.13.*",
-        "aiohttp[speedups]==3.6.2",
-        "httpx==0.13.*",
-        "requests==2.*",
     ],
     entry_points="""
         [console_scripts]
