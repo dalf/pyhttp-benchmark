@@ -7,7 +7,11 @@ import importlib
 import inspect
 import time
 import pickle
-from contextlib import asynccontextmanager
+
+if not sys.version_info.major == 3 and sys.version_info.minor >= 7:
+    from contextlib import asynccontextmanager
+else:
+    from .contextlib import asynccontextmanager  # type: ignore
 
 from .metrics import Measure
 from . import model

@@ -25,6 +25,8 @@ setup(
         "click==7.*",
         "snakeviz==2.*",
         "tqdm==4.*",
+        "dataclasses==0.*; python_version<'3.7'",
+        "Jinja2==2.*",
     ],
     entry_points="""
         [console_scripts]
