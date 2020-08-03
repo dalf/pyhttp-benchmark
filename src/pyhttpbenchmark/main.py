@@ -28,7 +28,7 @@ def run_scenario(cases: typing.List[model.LoadedCase], scenario: model.Scenario,
     metric = metrics.Metrics()
     stats = metrics.Stats()
     print("\n## Scenario %s: %s\n" % (scenario.id, scenario.name))
-    for case in tqdm(cases * effective_tries, leave=False, disable=None):
+    for case in tqdm(cases * effective_tries, leave=False, disable=None, desc=scenario.id):
         measure, stat = case_executor.run(case, scenario, config.record_profile, sslconfig)
         metric.add(case, measure)
         stats.add(case, stat)

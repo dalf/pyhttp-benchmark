@@ -9,29 +9,31 @@ import sys
 import time
 import contextlib
 import httpx
+import jinja2
 
-from . import app
-from .. import model
+from . import app, generate_certificates
+from .. import model, scenarios
 
 
 CADDY_VERSION = "2.1.1"
 CADDY_URL = (
     f"https://github.com/caddyserver/caddy/releases/download/v{CADDY_VERSION}/caddy_{CADDY_VERSION}_linux_amd64.tar.gz"
 )
-CADDY_CWD = pathlib.Path(__file__).parent.absolute()
-CADDYFILE_PATH = CADDY_CWD / "Caddyfile"
-CA_FILE = CADDY_CWD / "server.crt"
+CADDYFILE_TEMPLATE_PATH = pathlib.Path(__file__).parent.absolute() / "Caddyfile.template"
 
 HANDLED_SIGNALS = (
     signal.SIGINT,  # Unix signal 2. Sent by Ctrl+C.
     signal.SIGTERM,  # Unix signal 15. Sent by `kill <pid>`.
 )
 
+APP_HOSTNAME = "localhost"
+APP_PORT = 5000
+
 process_app = None
 process_caddy = None
 
 
-def stop():
+def stop() -> None:
     global process_app
     global process_caddy
 
@@ -45,7 +47,7 @@ def stop():
         process_caddy = None
 
 
-def signal_handler(sig, frame):
+def signal_handler(sig, frame) -> typing.NoReturn:
     stop()
     sys.exit(128 + sig)
 
@@ -62,26 +64,48 @@ def download_caddy(caddy_path: pathlib.Path) -> None:
         t.extract("caddy", caddy_path.parent)
 
 
-def wait_for_url(url, timeout):
+def create_caddyfile(src_template: str, dest: pathlib.Path, context: typing.Dict[typing.Any, typing.Any]) -> None:
+    template = jinja2.Template(src_template)
+    result = template.render(context)
+    with open(dest, 'w', encoding='utf-8') as dest_file:
+        dest_file.write(result)
+
+
+def wait_for_url(url: str, certificates: model.Certificates, timeout: float) -> None:
     SLEEP_TIME = 0.2
+    last_exception = None
     for _ in range(int(timeout / SLEEP_TIME)):
         time.sleep(SLEEP_TIME)
         try:
-            response = httpx.get(url, verify=CA_FILE)
+            response = httpx.get(url, verify=str(certificates.client_cert))
             response.raise_for_status()
-        except Exception:
-            pass
+        except Exception as e:
+            last_exception = e
         else:
             return
 
-    raise RuntimeError(f"{url} not available")
+    stop()
+    raise SystemExit(f"{url} not available", last_exception)
 
 
-def start(server_config: model.ServerConfig, caddy_log_file):
+def start(server_config: model.ServerConfig, caddy_log_file, certificates: model.Certificates,
+          hostname: str, port_range: typing.List[int]) -> None:
     global process_app
     global process_caddy
 
-    #
+    # create Caddyfile
+    caddypath_path = server_config.caddy_config_path / "Caddyfile"
+    create_caddyfile(scenarios.CADDYFILE, caddypath_path, {
+        "hostname": hostname,
+        "ports": port_range,
+        "certificates": certificates,
+        "app": {
+            "hostname": APP_HOSTNAME,
+            "port": APP_PORT
+        }
+    })
+
+    # signals
     for sig in HANDLED_SIGNALS:
         signal.signal(sig, signal_handler)
 
@@ -89,24 +113,27 @@ def start(server_config: model.ServerConfig, caddy_log_file):
     if not server_config.caddy_path.exists():
         download_caddy(server_config.caddy_path)
     process_caddy = subprocess.Popen(
-        (server_config.caddy_path, "run", "-config", CADDYFILE_PATH),
-        cwd=CADDY_CWD, stdout=caddy_log_file, stderr=caddy_log_file,
+        (server_config.caddy_path, "run", "-config", caddypath_path),
+        cwd=server_config.caddy_config_path, stdout=caddy_log_file, stderr=caddy_log_file,
     )
 
     # app
     spawn = multiprocessing.get_context("spawn")
-    process_app = spawn.Process(target=app.main, args=("localhost", 5000))
+    process_app = spawn.Process(target=app.main, args=(APP_HOSTNAME, APP_PORT))
     process_app.start()
 
-    wait_for_url("http://localhost:5000/0/1", 5)
-    wait_for_url("https://localhost:4001/0/1", 5)
+    wait_for_url(f"http://{APP_HOSTNAME}:{APP_PORT}/0/1", certificates, 5)
+    wait_for_url(f"https://{ hostname }:4001/0/1", certificates, 5)
 
 
 @contextlib.contextmanager
 def server(server_config: model.ServerConfig) -> typing.Generator[model.SslConfig, None, None]:
+    hostname = "localhost"
+    port_range = list(range(4001, 4010))
     with open(server_config.caddy_log_path, "w", encoding="utf-8") as caddy_log_file:
-        start(server_config, caddy_log_file)
-        try:
-            yield model.SslConfig(local_ca_file=CA_FILE)
-        finally:
-            stop()
+        with generate_certificates.generate_certificates(server_config.caddy_config_path, (hostname,)) as certificates:
+            start(server_config, caddy_log_file, certificates, hostname, port_range)
+            try:
+                yield model.SslConfig(local_ca_file=certificates.client_cert)
+            finally:
+                stop()

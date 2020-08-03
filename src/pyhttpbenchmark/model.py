@@ -8,6 +8,13 @@ from . import cases
 class ServerConfig(typing.NamedTuple):
     caddy_path: pathlib.Path
     caddy_log_path: pathlib.Path
+    caddy_config_path: pathlib.Path
+
+
+class Certificates(typing.NamedTuple):
+    server_key: pathlib.Path
+    server_cert: pathlib.Path
+    client_cert: pathlib.Path
 
 
 class SslConfig(typing.NamedTuple):

@@ -3,6 +3,7 @@ httpx==0.*
 requests==2.*
 uvloop==0.*
 trio==0.*
+trustme==0.6.*
 uvicorn==0.*
 starlette==0.*
 click==7.*

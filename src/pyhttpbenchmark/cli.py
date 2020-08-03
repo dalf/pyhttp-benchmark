@@ -18,6 +18,7 @@ CASE_NAMES = [
 ]
 CASE_NAMES.sort()
 FORMATTED_CASES = ", ".join(map(repr, CASE_NAMES))
+CADDY_PATH = pathlib.Path.home() / ".cache/pyhttpbenchmark/bin/caddy"
 
 
 @click.group()
@@ -144,8 +145,9 @@ def autocompletion_scenario_list(ctx, args, incomplete):
 def run(profile, csv, tries, case_list, scenario_list) -> None:
     config = model.Config(record_profile=profile, record_csv=csv, tries=tries)
     server_config = model.ServerConfig(
-        caddy_path=output.get_file(pathlib.Path.home() / ".cache/pyhttpbenchmark/bin/caddy"),
-        caddy_log_path=output.get_output_file("logs/caddy.log"))
+        caddy_path=output.get_file(CADDY_PATH),
+        caddy_log_path=output.get_output_file("logs/caddy.log"),
+        caddy_config_path=output.get_output_directory("config"))
     # intro
     print("## Versions\n")
     print("* %-30s %s" % ("Python", sys.version.replace("\n", "")))

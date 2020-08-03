@@ -10,10 +10,6 @@ setup(
     package_data={
         'src': [
             'pyhttpbenchmark/py.typed',
-            'pyhttpbenchmark/server/Caddyfile',
-            'pyhttpbenchmark/server/server.key',
-            'pyhttpbenchmark/server/server.crt',
-            'pyhttpbenchmark/server/create_certificate.sh',
         ]
     },
     install_requires=[
@@ -23,6 +19,7 @@ setup(
         "uvloop==0.*",
         "trio==0.*",
         "click==7.*",
+        "trustme==0.6.*",
         "uvicorn==0.*",
         "starlette==0.*",
         "click==7.*",
