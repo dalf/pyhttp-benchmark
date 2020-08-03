@@ -1,10 +1,11 @@
 # pyhttp-benchmark
-Micro-benchmarks on some very specify use-cases heavily inspired by [httpxprof](https://github.com/florimondmanca/httpxprof).
+Micro-benchmarks of the Python HTTP clients. Heavily inspired by [httpxprof](https://github.com/florimondmanca/httpxprof).
 
-Each time the test runs inside a new spawn process with garbage collector stopped.
-Use [time.perf_counter()](https://docs.python.org/3/library/time.html#time.perf_counter) and [time.process_time()](https://docs.python.org/3/library/time.html#time.process_time).
+Each test runs inside a new spawn process with garbage collector stopped. Use [time.perf_counter()](https://docs.python.org/3/library/time.html#time.perf_counter) and [time.process_time()](https://docs.python.org/3/library/time.html#time.process_time).
 
-[requests](https://github.com/dalf/pyhttp-benchmark/blob/master/src/pyhttpbenchmark/cases/requests.py) test implementation is based on [searx/search.py](https://github.com/asciimoo/searx/blob/fc5d1c69cc01ec1c44e5d2d9644269b6b737fa5a/searx/search.py#L221-L239)
+See:
+* [List of scenarios](https://github.com/dalf/pyhttp-benchmark/blob/master/src/pyhttpbenchmark/scenarios.py)
+* [List of cases](https://github.com/dalf/pyhttp-benchmark/tree/master/src/pyhttpbenchmark/cases)
 
 The HTTPS server uses:
 * [caddy](https://caddyserver.com/) (downloaded automatically in ```~/.cache/pyhttpbenchmark/bin/caddy```)
@@ -21,6 +22,8 @@ pip install -e git+https://github.com/dalf/pyhttp-benchmark#egg=pyhttpbenchmark
 eval "$(_PYHTTPBENCHMARK_COMPLETE=source_bash pyhttpbenchmark )"
 
 # run all cases, all scenarios
+# output in the current directory
+# it can be changed with the --output parameter
 pyhttpbenchmark run . .
 ```
 
@@ -40,9 +43,11 @@ pyhttpbenchmark run --profile httpx 1_100seq_1mb
 # view
 pyhttpbenchmark view httpx 1_100seq_1mb
 
-# custom case
+# custom cases
 wget https://gist.githubusercontent.com/dalf/cebb2032578151357b8c9ab2a320b51f/raw/dab40e925ced12738cc6f69c61b43a2d20f0c509/httpx_trio.py
+wget https://gist.githubusercontent.com/dalf/cebb2032578151357b8c9ab2a320b51f/raw/7dbc414f53034d256f8063fc9da21dc94eefb65f/httpx_hack.py
 cat httpx_trio.py
-pyhttpbenchmark run --profile ./httpx_trio.py,httpx 1_30seq_8kb_400ms
-pyhttpbenchmark view ./httpx_trio.py 1_30seq_8kb_400ms
+cat httpx_hack.py
+pyhttpbenchmark run --tries 4 --profile ./httpx_trio.py,./httpx_hack.py,httpx,aiohttp 1_100seq_1mb
+pyhttpbenchmark view ./httpx_hack.py 1_100seq_1mb
 ```
