@@ -123,7 +123,8 @@ def start(server_config: model.ServerConfig, caddy_log_file, certificates: model
     process_app.start()
 
     wait_for_url(f"http://{APP_HOSTNAME}:{APP_PORT}/0/1", certificates, 5)
-    wait_for_url(f"https://{ hostname }:4001/0/1", certificates, 5)
+    for port in port_range:
+            wait_for_url(f"https://{hostname}:{port}/0/1", certificates, 5)
 
 
 @contextlib.contextmanager
