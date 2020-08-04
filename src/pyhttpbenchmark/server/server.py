@@ -15,9 +15,10 @@ from . import app, generate_certificates
 from .. import model, scenarios
 
 
+PLATFORM = "mac" if sys.platform == "darwin" else "linux"
 CADDY_VERSION = "2.1.1"
 CADDY_URL = (
-    f"https://github.com/caddyserver/caddy/releases/download/v{CADDY_VERSION}/caddy_{CADDY_VERSION}_linux_amd64.tar.gz"
+    f"https://github.com/caddyserver/caddy/releases/download/v{CADDY_VERSION}/caddy_{CADDY_VERSION}_{PLATFORM}_amd64.tar.gz"
 )
 CADDYFILE_TEMPLATE_PATH = pathlib.Path(__file__).parent.absolute() / "Caddyfile.template"
 
