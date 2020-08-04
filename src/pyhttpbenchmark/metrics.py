@@ -25,7 +25,7 @@ class Metrics:
             f.write("case;runtime;cputime\n")
             for case, stat in self.values.items():
                 for measure in stat:
-                    f.write("%s; %.2f; %.2f\n" % (case.name, measure[0], measure[1]))
+                    f.write("%s; %.2f; %.2f\n" % (case.full_name, measure[0], measure[1]))
 
     def print(self) -> None:
         """
@@ -41,6 +41,8 @@ class Metrics:
         print(f"|-{'-' * case_name_length}-|---------|---------|---------|---------|---------|---------|")  # noqa
         print(f"| {' ' * case_name_length} |  median |    mean |   stdev |  median |    mean |   stdev |")  # noqa
         for case, stat in self.values.items():
+            case_name = case.full_name
+
             runtime = list(map(lambda s: s[0], stat))
             cputime = list(map(lambda s: s[1], stat))
 
@@ -53,7 +55,7 @@ class Metrics:
             cputime_stdev = statistics.stdev(cputime)
             print(
                 f"| %-{case_name_length}s | %7.2f | %7.2f | %7.2f | %7.2f | %7.2f | %7.2f |"
-                % (case.name, runtime_median, runtime_mean, runtime_stdev, cputime_median, cputime_mean, cputime_stdev,)
+                % (case.full_name, runtime_median, runtime_mean, runtime_stdev, cputime_median, cputime_mean, cputime_stdev,)
             )
         print("\n")
 

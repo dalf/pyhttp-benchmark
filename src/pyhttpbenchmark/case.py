@@ -85,26 +85,26 @@ def _no_gc() -> typing.Generator[None, None, None]:
         gc.enable()
 
 
-def _call_async_main(main, *args) -> None:
+def _call_async_main(main, *args, **kwargs) -> None:
     import asyncio
     import uvloop  # type: ignore
 
     uvloop.install()
     loop = asyncio.get_event_loop()
     with _no_gc():
-        loop.run_until_complete(main(*args))
+        loop.run_until_complete(main(*args, **kwargs))
 
 
-def _call_trio_main(main, *args) -> None:
+def _call_trio_main(main, *args, **kwargs) -> None:
     import trio  # type: ignore
 
     with _no_gc():
-        trio.run(main, *args)
+        trio.run(main, *args, **kwargs)
 
 
-def _call_sync_main(main, *args) -> None:
+def _call_sync_main(main, *args, **kwargs) -> None:
     with _no_gc():
-        main(*args)
+        main(*args, **kwargs)
 
 
 def _import_module(case: model.LoadedCase):
@@ -116,7 +116,7 @@ def _import_module(case: model.LoadedCase):
 
 
 def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scenario: model.Scenario,
-        sslconfig: model.SslConfig) -> None:
+        sslconfig: model.SslConfig, **kwargs) -> None:
     global MEASURE_FILENAME
     global STATS_FILENAME
     MEASURE_FILENAME = measure_filename
@@ -131,4 +131,25 @@ def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scen
     else:
         call_main = _call_async_main
 
-    call_main(main, scenario, sslconfig)
+    call_main(main, scenario, sslconfig, **kwargs)
+
+
+def get_parameters(parameter_filename: str, parameter: model.LoadedCase):
+    parameters_list = []
+
+    module = _import_module(parameter)
+    get_parameters = inspect.getattr_static(module, 'get_parameters', None)
+    if get_parameters:
+        parameters = get_parameters()
+        names = [name.strip() for name in parameters[0].split(',')]
+        for values in parameters[1]:
+            parameter = dict()
+            for i, name in enumerate(names):
+                parameter[name] = values[i]
+            # frozenset of tuple(name, value, position)
+            # parameter_set = frozenset([(*i[1], i[0]) for i in enumerate(parameter.items())])
+            parameter_set = frozenset(parameter.items())
+            parameters_list.append(parameter_set)
+
+    with open(parameter_filename, 'wb') as f:
+        f.write(pickle.dumps(parameters_list))

@@ -57,7 +57,7 @@ def get_loaded_case(case_name: str) -> model.LoadedCase:
             )
 
         name = name_from_script(path)
-        return model.LoadedCase(name=name, path=path)
+        return model.LoadedCase(name=name, path=path, parameters=frozenset())
 
     # Built-in case.
     if case_name not in CASE_NAMES:
@@ -69,7 +69,7 @@ def get_loaded_case(case_name: str) -> model.LoadedCase:
     path = CASES_DIR / f"{name}.py"
     assert path.exists()
 
-    return model.LoadedCase(name=name, path=path)
+    return model.LoadedCase(name=name, path=path, parameters=frozenset())
 
 
 def handle_case(ctx: click.Context, param: click.Parameter, value: str) -> model.LoadedCase:
@@ -185,6 +185,7 @@ def show_scenarios():
 
 @show.command(name='cases')
 def show_cases():
-    for case_name in CASE_NAMES:
-        case = handle_case(None, None, case_name)
-        print("%-30s %-120s" % (case.name, case.path))
+    case_list = [get_loaded_case(case_name) for case_name in CASE_NAMES]
+    case_list = main.parametrize(case_list)
+    for case in case_list:
+        print("%-30s %-120s" % (case.full_name, case.path))

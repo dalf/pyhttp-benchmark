@@ -30,6 +30,7 @@ class Config(typing.NamedTuple):
 class LoadedCase(typing.NamedTuple):
     name: str
     path: pathlib.Path
+    parameters: typing.FrozenSet[typing.Tuple[str, typing.Any]]
 
     @property
     def prof_filename(self) -> pathlib.Path:
@@ -38,6 +39,15 @@ class LoadedCase(typing.NamedTuple):
     @property
     def package_name(self) -> str:
         return cases.__package__ + '.' + self.name
+
+    @property
+    def full_name(self) -> str:
+        full_name = self.name
+        if len(self.parameters) > 0:
+            l = list(self.parameters)
+            l.sort(key=lambda p: p[0])
+            full_name += '_' + '_'.join([str(i[1]) for i in l])
+        return full_name
 
 
 @dataclass(frozen=True)
