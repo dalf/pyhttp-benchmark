@@ -18,7 +18,7 @@ from .. import model, scenarios
 PLATFORM = "mac" if sys.platform == "darwin" else "linux"
 CADDY_VERSION = "2.1.1"
 CADDY_URL = (
-    f"https://github.com/caddyserver/caddy/releases/download/v{CADDY_VERSION}/caddy_{CADDY_VERSION}_{PLATFORM}_amd64.tar.gz"
+    f"https://github.com/caddyserver/caddy/releases/download/v{CADDY_VERSION}/caddy_{CADDY_VERSION}_{PLATFORM}_amd64.tar.gz"  # noqa
 )
 CADDYFILE_TEMPLATE_PATH = pathlib.Path(__file__).parent.absolute() / "Caddyfile.template"
 
@@ -30,8 +30,8 @@ HANDLED_SIGNALS = (
 APP_HOSTNAME = "localhost"
 APP_PORT = 5000
 
-process_app = None
-process_caddy = None
+process_app: typing.Optional[multiprocessing.context.SpawnProcess] = None
+process_caddy: typing.Optional[subprocess.Popen] = None
 
 
 def stop() -> None:
@@ -41,10 +41,16 @@ def stop() -> None:
     # send SIGTERM
     if process_app is not None:
         process_app.terminate()
+        process_app.join(3.0)
+        process_app.close()
         process_app = None
 
     if process_caddy is not None:
         process_caddy.terminate()
+        try:
+            process_caddy.wait(3.0)
+        except subprocess.TimeoutExpired:
+            process_caddy.kill()
         process_caddy = None
 
 
@@ -94,6 +100,9 @@ def start(server_config: model.ServerConfig, caddy_log_file, certificates: model
     global process_app
     global process_caddy
 
+    if process_app is not None or process_caddy is not None:
+        raise Exception('A server is already running')
+
     # create Caddyfile
     caddypath_path = server_config.caddy_config_path / "Caddyfile"
     create_caddyfile(scenarios.CADDYFILE, caddypath_path, {
@@ -123,15 +132,15 @@ def start(server_config: model.ServerConfig, caddy_log_file, certificates: model
     process_app = spawn.Process(target=app.main, args=(APP_HOSTNAME, APP_PORT))
     process_app.start()
 
+    # wait for the servers to be ready
     wait_for_url(f"http://{APP_HOSTNAME}:{APP_PORT}/0/1", certificates, 5)
     for port in port_range:
         wait_for_url(f"https://{hostname}:{port}/0/1", certificates, 5)
 
 
 @contextlib.contextmanager
-def server(server_config: model.ServerConfig) -> typing.Generator[model.SslConfig, None, None]:
-    hostname = "localhost"
-    port_range = list(range(4001, 4010))
+def server(server_config: model.ServerConfig,
+           hostname: str, port_range: typing.List[int]) -> typing.Generator[model.SslConfig, None, None]:
     with open(server_config.caddy_log_path, "w", encoding="utf-8") as caddy_log_file:
         with generate_certificates.generate_certificates(server_config.caddy_config_path, (hostname,)) as certificates:
             start(server_config, caddy_log_file, certificates, hostname, port_range)
