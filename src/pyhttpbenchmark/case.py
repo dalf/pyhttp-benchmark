@@ -134,22 +134,19 @@ def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scen
     call_main(main, scenario, sslconfig, **kwargs)
 
 
-def get_parameters(parameter_filename: str, parameter: model.LoadedCase):
+def get_parameters(parameter_filename: str, case: model.LoadedCase):
     parameters_list = []
 
-    module = _import_module(parameter)
+    module = _import_module(case)
     get_parameters = inspect.getattr_static(module, 'get_parameters', None)
     if get_parameters:
         parameters = get_parameters()
         names = [name.strip() for name in parameters[0].split(',')]
         for values in parameters[1]:
-            parameter = dict()
+            case_parameter = dict()
             for i, name in enumerate(names):
-                parameter[name] = values[i]
-            # frozenset of tuple(name, value, position)
-            # parameter_set = frozenset([(*i[1], i[0]) for i in enumerate(parameter.items())])
-            parameter_set = frozenset(parameter.items())
-            parameters_list.append(parameter_set)
+                case_parameter[name] = values[i]
+            parameters_list.append(frozenset(case_parameter.items()))
 
     with open(parameter_filename, 'wb') as f:
         f.write(pickle.dumps(parameters_list))

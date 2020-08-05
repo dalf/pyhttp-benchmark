@@ -44,9 +44,9 @@ class LoadedCase(typing.NamedTuple):
     def full_name(self) -> str:
         full_name = self.name
         if len(self.parameters) > 0:
-            l = list(self.parameters)
-            l.sort(key=lambda p: p[0])
-            full_name += '_' + '_'.join([str(i[1]) for i in l])
+            param_list = list(self.parameters)
+            param_list.sort(key=lambda p: p[0])
+            full_name += '_' + '_'.join([str(i[1]) for i in param_list])
         return full_name
 
 
