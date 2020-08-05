@@ -42,12 +42,13 @@ handlers: typing.Dict[typing.Any,
 def get_parameters():
     parameters = []
     for http2 in [True, False]:
-        for read_num_bytes in range(9):
+        for read_num_bytes in range(7):
             parameters.append((http2, 4096*2**read_num_bytes))
     return ('http2,read_num_bytes', parameters)
 
 
-async def main(scenario: model.Scenario, sslconfig: model.SslConfig, http2: bool = True, read_num_bytes: int = None) -> None:
+async def main(scenario: model.Scenario, sslconfig: model.SslConfig,
+               http2: bool = True, read_num_bytes: int = None) -> None:
     if read_num_bytes:
         httpcore._async.http2.AsyncHTTP2Connection.READ_NUM_BYTES = read_num_bytes
         httpcore._async.http11.AsyncHTTP11Connection.READ_NUM_BYTES = read_num_bytes
