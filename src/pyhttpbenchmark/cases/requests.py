@@ -53,8 +53,18 @@ handlers: typing.Dict[typing.Any, typing.Callable[[typing.Any, requests.Session]
     {model.StepRequests: step_requests, model.StepRequest: step_request, model.StepDelay: step_delay}
 
 
-def main_partial(session_list: typing.List[requests.Session], scenario: model.Scenario,
-                 sslconfig: model.SslConfig) -> None:
+def get_parameters():
+    """
+    in the case of a WSGI application which sends HTTP requests,
+    it is not possible to have common pool.
+    this case uses 4 differents requests.Session to simulate this behavior.
+    """
+    return ('session_count', [(1,), (4,)])
+
+
+def main(scenario: model.Scenario, sslconfig: model.SslConfig, session_count: int = 1) -> None:
+    session_list = [requests.Session() for i in range(session_count)]
+
     if scenario.local_ca:
         for session in session_list:
             session.verify = str(sslconfig.local_ca_file)
@@ -65,8 +75,3 @@ def main_partial(session_list: typing.List[requests.Session], scenario: model.Sc
             all_threads += handlers[step.__class__](step, random.choice(session_list))
         for t in all_threads:
             t.join()
-
-
-def main(scenario: model.Scenario, sslconfig: model.SslConfig) -> None:
-    session_list = [requests.Session()]
-    main_partial(session_list, scenario, sslconfig)

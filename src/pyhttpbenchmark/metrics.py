@@ -25,7 +25,7 @@ class Metrics:
             f.write("case;runtime;cputime\n")
             for case, stat in self.values.items():
                 for measure in stat:
-                    f.write("%s; %.2f; %.2f\n" % (case.name, measure[0], measure[1]))
+                    f.write("%s; %.2f; %.2f\n" % (case.full_name, measure[0], measure[1]))
 
     def print(self) -> None:
         """
@@ -53,7 +53,9 @@ class Metrics:
             cputime_stdev = statistics.stdev(cputime)
             print(
                 f"| %-{case_name_length}s | %7.2f | %7.2f | %7.2f | %7.2f | %7.2f | %7.2f |"
-                % (case.name, runtime_median, runtime_mean, runtime_stdev, cputime_median, cputime_mean, cputime_stdev,)
+                % (case.full_name,
+                   runtime_median, runtime_mean, runtime_stdev,
+                   cputime_median, cputime_mean, cputime_stdev,)
             )
         print("\n")
 

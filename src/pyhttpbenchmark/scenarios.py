@@ -217,3 +217,54 @@ SCENARIOS += Scenario(
     local_ca=True,
     steps=[StepRequests(urls=["https://localhost:4001/400/8192"] * 30), ],
 )
+
+
+ONE_HUNDRED_REQUESTS = [
+                "https://localhost:4001/800/2048",
+                "https://localhost:4002/900/1048576",
+                "https://localhost:4003/600/65000",
+                "https://localhost:4004/400/8000",
+                "https://localhost:4005/500/1048576",
+                "https://localhost:4006/800/2048",
+                "https://localhost:4007/900/2097152",
+                "https://localhost:4008/600/4096",
+                "https://localhost:4009/400/1048576",
+                "https://localhost:4010/400/1048576",
+                "https://localhost:4001/800/700000",
+                "https://localhost:4002/900/1048576",
+                "https://localhost:4003/600/2048",
+                "https://localhost:4004/400/2048",
+                "https://localhost:4005/500/1048576",
+                "https://localhost:4006/800/2048",
+                "https://localhost:4007/900/2048",
+                "https://localhost:4008/600/1048576",
+                "https://localhost:4009/400/2048",
+                "https://localhost:4010/800/700000",
+    ] * 5
+
+SCENARIOS += Scenario(
+    id="100_2seq",
+    name="2 sequences of 100 requests, between 2KB and 2MB responses (various delays), 2s in between",
+    tries=10,
+    local_ca=True,
+    steps=[StepRequests(urls=ONE_HUNDRED_REQUESTS), StepDelay(2.0), StepRequests(urls=ONE_HUNDRED_REQUESTS)]
+)
+
+SCENARIOS += Scenario(
+    id="60_1seq_1mb",
+    name="60 requests, 1MB response (various delays)",
+    tries=10,
+    local_ca=True,
+    steps=[StepRequests(urls=[
+                "https://localhost:4001/800/1048576",
+                "https://localhost:4002/900/1048576",
+                "https://localhost:4003/600/1048576",
+                "https://localhost:4004/400/1048576",
+                "https://localhost:4005/500/1048576",
+                "https://localhost:4006/800/1048576",
+                "https://localhost:4007/900/1048576",
+                "https://localhost:4008/600/1048576",
+                "https://localhost:4009/400/1048576",
+                "https://localhost:4010/400/1048576",
+    ] * 6)]
+)
