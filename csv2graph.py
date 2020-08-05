@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+
+"""
+Usage:
+pyhttpbench run --csv . .
+cd results
+csv2graph *.csv
+"""
+
 import sys
 import pathlib
 from io import StringIO
@@ -12,7 +21,7 @@ def create_png(finput_name: str, foutput_name: str):
         runtime_stats = dict()
         cputime_stats = dict()
         for row in reader:
-            if len(row) > 0 and row[0] != 'case':
+            if reader.line_num > 1:
                 runtime_stat = runtime_stats.setdefault(row[0], list())
                 runtime_stat.append(float(row[1]))
                 cputime_stat = cputime_stats.setdefault(row[0], list())
@@ -41,7 +50,7 @@ def create_png(finput_name: str, foutput_name: str):
     ax.bar(stats['labels'], stats['runtime_mean'], width, yerr=stats['runtime_stdev'], label='Runtime')
     ax.bar(stats['labels'], stats['cputime_mean'], width, yerr=stats['cputime_stdev'], label='CPU time')
 
-    ax.set_ylabel('Response time (second)')
+    ax.set_ylabel('Average response time with the standard deviation (second)')
     ax.set_title(finput_name)
     ax.legend()
     plt.xticks(rotation='vertical')
