@@ -42,8 +42,8 @@ handlers: typing.Dict[typing.Any,
 def get_parameters():
     parameters = []
     for http2 in [True, False]:
-        for read_num_bytes in range(7):
-            parameters.append((http2, 4096*2**read_num_bytes))
+        for read_num_bytes in [4096, 16384, 32768, 65536, 98304, 131072, 163840]:
+            parameters.append((http2, read_num_bytes))
     return ('http2,read_num_bytes', parameters)
 
 
