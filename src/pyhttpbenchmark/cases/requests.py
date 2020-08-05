@@ -59,13 +59,12 @@ def get_parameters():
     it is not possible to have common pool.
     this case uses 4 differents requests.Session to simulate this behavior.
     """
-    return ('session_count', [(1), (4)])
+    return ('session_count', [(1,), (4,)])
 
 
-def main_partial(scenario: model.Scenario, sslconfig: model.SslConfig, session_count: int = 1) -> None:
-    session_list = [None] * session_count
-    for i in range(session_count):
-        session_list[i] = requests.Session()
+def main(scenario: model.Scenario, sslconfig: model.SslConfig, session_count: int = 1) -> None:
+    session_list = [requests.Session() for i in range(session_count)]
+
     if scenario.local_ca:
         for session in session_list:
             session.verify = str(sslconfig.local_ca_file)
