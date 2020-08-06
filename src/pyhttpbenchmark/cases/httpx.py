@@ -4,7 +4,6 @@ from ..case import async_record_measure
 
 import asyncio
 import httpx
-import httpcore
 
 
 """
@@ -42,16 +41,12 @@ handlers: typing.Dict[typing.Any,
 def get_parameters():
     parameters = []
     for http2 in [True, False]:
-        for read_num_bytes in [4096, 16384, 32768, 65536, 98304, 131072, 163840]:
-            parameters.append((http2, read_num_bytes))
-    return ('http2,read_num_bytes', parameters)
+        parameters.append((http2,))
+    return ('http2', parameters)
 
 
 async def main(scenario: model.Scenario, sslconfig: model.SslConfig,
-               http2: bool = True, read_num_bytes: int = None) -> None:
-    if read_num_bytes:
-        httpcore._async.http2.AsyncHTTP2Connection.READ_NUM_BYTES = read_num_bytes
-        httpcore._async.http11.AsyncHTTP11Connection.READ_NUM_BYTES = read_num_bytes
+               http2: bool = True) -> None:
     loop = asyncio.get_event_loop()
     all_tasks = []
     verify: typing.Union[bool, str] = True if not scenario.local_ca else str(sslconfig.local_ca_file)

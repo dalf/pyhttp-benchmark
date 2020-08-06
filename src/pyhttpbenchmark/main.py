@@ -21,13 +21,6 @@ def warm_up_server(scenario: model.Scenario, sslconfig: model.SslConfig) -> None
             response.raise_for_status()
 
 
-def parametrize(cases: typing.List[model.LoadedCase]) -> typing.List[model.LoadedCase]:
-    result = []
-    for case in tqdm(cases, leave=False, disable=None):
-        result += case_executor.parametrize(case)
-    return result
-
-
 def run_scenario(cases: typing.List[model.LoadedCase], scenario: model.Scenario,
                  config: model.Config, sslconfig: model.SslConfig) -> None:
     effective_tries = scenario.tries if config.tries is None else config.tries
@@ -45,13 +38,14 @@ def run_scenario(cases: typing.List[model.LoadedCase], scenario: model.Scenario,
     metric.print()
     if config.record_csv:
         metric.save(scenario)
+    if config.record_png:
+        metric.save_png(scenario)
     if config.record_profile:
         stats.save(scenario)
 
 
 def run_scenario_list(cases: typing.List[model.LoadedCase], scenario_list: typing.List[model.Scenario],
                       config: model.Config, server_config: model.ServerConfig) -> None:
-    cases = parametrize(cases)
     for scenario in scenario_list:
         with server.server(server_config, "localhost", list(range(4001, 4011))) as sslconfig:
             run_scenario(cases, scenario, config, sslconfig)

@@ -25,7 +25,11 @@ class Metrics:
             f.write("case;runtime;cputime\n")
             for case, stat in self.values.items():
                 for measure in stat:
-                    f.write("%s; %.2f; %.2f\n" % (case.full_name, measure[0], measure[1]))
+                    f.write("%s, %.2f, %.2f\n" % (case.full_name, measure[0], measure[1]))
+
+    def save_png(self, scenario: model.Scenario) -> None:
+        from . import graph
+        graph.save(self, scenario)
 
     def print(self) -> None:
         """

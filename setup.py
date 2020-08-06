@@ -27,8 +27,11 @@ setup(
         "tqdm==4.*",
         "dataclasses==0.*; python_version<'3.7'",
         "Jinja2==2.*",
-        "irl==0.2"
+        "irl==0.2",
     ],
+    extras_require = {
+        'graph':  ["matplotlib"]
+    },
     entry_points="""
         [console_scripts]
         pyhttpbenchmark=pyhttpbenchmark.cli:cli

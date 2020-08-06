@@ -7,7 +7,7 @@ import hashlib
 import pkg_resources
 import subprocess
 
-from . import scenarios, model, output, cases, main
+from . import scenarios, model, output, cases, main, case_executor
 
 
 CASES_DIR = pathlib.Path(cases.__file__).parent
@@ -29,7 +29,8 @@ def cli(ctx, output_dir) -> None:
         output.OUTPUTDIR = pathlib.Path.cwd()
     else:
         output.OUTPUTDIR = pathlib.Path.cwd() / output_dir
-    print("Output directory: %s" % output.OUTPUTDIR)
+    sys.stderr.write("Output directory: %s\n" % output.OUTPUTDIR)
+    sys.stderr.flush()
 
 
 def name_from_script(path: pathlib.Path) -> str:
@@ -41,7 +42,7 @@ def name_from_script(path: pathlib.Path) -> str:
     return f"{path.stem}_{hsh}"
 
 
-def get_loaded_case(case_name: str) -> model.LoadedCase:
+def get_loaded_case(case_name: str) -> typing.List[model.LoadedCase]:
     if not case_name:
         raise click.BadArgumentUsage(
             f"Expected a case. Choose from {FORMATTED_CASES}, or pass a Python script."
@@ -57,30 +58,47 @@ def get_loaded_case(case_name: str) -> model.LoadedCase:
             )
 
         name = name_from_script(path)
-        return model.LoadedCase(name=name, path=path, parameters=frozenset())
+        case = model.LoadedCase(name=name, path=path, parameters=frozenset())
+        return case_executor.parametrize(case)
 
-    # Built-in case.
-    if case_name not in CASE_NAMES:
+    # Built-in case
+    base_case_name = None
+    for c in CASE_NAMES:
+        if case_name.startswith(c):
+            base_case_name = c
+            break
+    else:
         raise click.BadArgumentUsage(
             f"Unknown built-in case: {case_name!r}. Valid options: {FORMATTED_CASES}"
         )
 
-    name = case_name
-    path = CASES_DIR / f"{name}.py"
+    path = CASES_DIR / f"{base_case_name}.py"
     assert path.exists()
 
-    return model.LoadedCase(name=name, path=path, parameters=frozenset())
+    case = model.LoadedCase(name=base_case_name, path=path, parameters=frozenset())
+    case_list = case_executor.parametrize(case)
 
-
-def handle_case(ctx: click.Context, param: click.Parameter, value: str) -> model.LoadedCase:
-    return get_loaded_case(value)
+    if case_name == base_case_name:
+        return case_list
+    else:
+        for case in case_list:
+            if case.full_name == case_name:
+                return [case]
+        else:
+            raise click.BadArgumentUsage(
+                f"Unknown built-in case: {case_name!r}. Valid options: {FORMATTED_CASES}"
+            )
 
 
 def handle_cases(ctx: click.Context, param: click.Parameter, value: str) -> typing.List[model.LoadedCase]:
     case_name_list = [case.strip() for case in value.split(',')]
     if len(case_name_list) == 1 and case_name_list[0] == '.':
         case_name_list = CASE_NAMES
-    return [get_loaded_case(case_name) for case_name in case_name_list]
+
+    case_list = []
+    for case_name in case_name_list:
+        case_list += get_loaded_case(case_name)
+    return case_list
 
 
 def get_scenario(scenario_name: str) -> model.Scenario:
@@ -137,13 +155,14 @@ def autocompletion_scenario_list(ctx, args, incomplete):
 @cli.command()
 @click.option('--profile/--no-profile', default=False)
 @click.option('--csv/--no-csv', default=False)
+@click.option('--png/--no-png', default=False)
 @click.option("--tries", type=int, default=None)
 @click.argument("case_list", callback=handle_cases, required=False, default='.',
                 autocompletion=autocompletion_case_list)
 @click.argument("scenario_list", callback=handle_scenarios, required=False, default='.',
                 autocompletion=autocompletion_scenario_list)
-def run(profile, csv, tries, case_list, scenario_list) -> None:
-    config = model.Config(record_profile=profile, record_csv=csv, tries=tries)
+def run(profile, csv, png, tries, case_list, scenario_list) -> None:
+    config = model.Config(record_profile=profile, record_csv=csv, record_png=png, tries=tries)
     server_config = model.ServerConfig(
         caddy_path=output.get_file(CADDY_PATH),
         caddy_log_path=output.get_output_file("logs/caddy.log"),
@@ -155,7 +174,7 @@ def run(profile, csv, tries, case_list, scenario_list) -> None:
         print("* %-30s %s" % (pkg, pkg_resources.get_distribution(pkg).version))
     if len(case_list) > 1 or len(scenario_list) > 1:
         print("\n## Context\n")
-        print("* Cases: %s" % (', '.join([case.name for case in case_list])))
+        print("* Cases: %s" % (', '.join([case.full_name for case in case_list])))
         print("* Scenarios: %s" % (', '.join([scenario.id for scenario in scenario_list])))
         print("* Tries: %s" % ("default" if tries is None else tries))
         print()
@@ -165,10 +184,16 @@ def run(profile, csv, tries, case_list, scenario_list) -> None:
 
 
 @cli.command()
-@click.argument("case", callback=handle_case, autocompletion=autocompletion_case)
+@click.argument("case_list", callback=handle_cases, autocompletion=autocompletion_case, metavar='CASE')
 @click.argument("scenario", callback=handle_scenario, autocompletion=autocompletion_scenario)
-def view(case: model.LoadedCase, scenario: model.Scenario) -> None:
-    args = ["snakeviz", str(output.get_prof_file(scenario, case))]
+def view(case_list: typing.List[model.LoadedCase], scenario: model.Scenario) -> None:
+    if len(case_list) != 1:
+        case_names = ', '.join([case.full_name for case in case_list])
+        raise click.BadArgumentUsage(
+                f"Require one case. Current list: {case_names}."
+            )
+
+    args = ["snakeviz", str(output.get_prof_file(scenario, case_list[0]))]
     subprocess.run(args)
 
 
@@ -185,7 +210,8 @@ def show_scenarios():
 
 @show.command(name='cases')
 def show_cases():
-    case_list = [get_loaded_case(case_name) for case_name in CASE_NAMES]
-    case_list = main.parametrize(case_list)
+    case_list = []
+    for case_name in CASE_NAMES:
+        case_list += get_loaded_case(case_name)
     for case in case_list:
         print("%-30s %-120s" % (case.full_name, case.path))

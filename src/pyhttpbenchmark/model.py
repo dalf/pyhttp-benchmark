@@ -23,6 +23,7 @@ class SslConfig(typing.NamedTuple):
 
 class Config(typing.NamedTuple):
     record_csv: bool
+    record_png: bool
     record_profile: bool
     tries: int
 

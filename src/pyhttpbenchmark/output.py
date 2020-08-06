@@ -27,8 +27,12 @@ def get_output_file(relative_path: typing.Union[str, pathlib.Path]) -> pathlib.P
 
 
 def get_prof_file(scenario: model.Scenario, case: model.LoadedCase) -> pathlib.Path:
-    return get_output_directory("results") / f"{scenario.id}_{case.name}.prof"
+    return get_output_directory("results") / f"{scenario.id}_{case.full_name}.prof"
 
 
 def get_csv_file(scenario: model.Scenario) -> pathlib.Path:
     return get_output_directory("results") / f"{scenario.id}.csv"
+
+
+def get_png_file(scenario: model.Scenario) -> pathlib.Path:
+    return get_output_directory("results") / f"{scenario.id}.png"

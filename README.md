@@ -37,10 +37,11 @@ pyhttpbenchmark show scenarios
 # run some cases and some scenarios
 pyhttpbenchmark run httpx,httpx_11 100_2seq_2kb,1_30seq_8kb_400ms
 
-# run one case with one scenario, record .prof file
-pyhttpbenchmark run --profile httpx 1_100seq_1mb
+# run one case with one scenario
+# record .prof, .csv files and create graph store as .png file (require matplotlib)
+pyhttpbenchmark run --png --csv --profile httpx 1_100seq_1mb
 
-# view
+# view .prof file using snakeviz
 pyhttpbenchmark view httpx 1_100seq_1mb
 
 # custom cases
