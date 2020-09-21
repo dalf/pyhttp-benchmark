@@ -98,8 +98,20 @@ def _call_async_main(main, *args, **kwargs) -> None:
 def _call_trio_main(main, *args, **kwargs) -> None:
     import trio  # type: ignore
 
+    async def main_args_kwargs():
+        await main(*args, **kwargs)
+
     with _no_gc():
-        trio.run(main, *args, **kwargs)
+        trio.run(main_args_kwargs)
+
+
+def _call_curio_main(main, *args, **kwargs) -> None:
+    import curio
+
+    async def main_args_kwargs():
+        await main(*args, **kwargs)
+
+    curio.run(main_args_kwargs, with_monitor=True)
 
 
 def _call_sync_main(main, *args, **kwargs) -> None:
@@ -128,6 +140,8 @@ def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scen
         call_main = _call_sync_main
     elif 'trio' in sys.modules:
         call_main = _call_trio_main
+    elif 'curio' in sys.modules:
+        call_main = _call_curio_main
     else:
         call_main = _call_async_main
 
