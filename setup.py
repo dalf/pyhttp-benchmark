@@ -18,6 +18,7 @@ setup(
         "requests==2.*",
         "uvloop==0.*",
         "trio==0.*",
+        "curio==1.*",
         "click==7.*",
         "trustme==0.6.*",
         "uvicorn==0.*",
