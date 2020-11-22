@@ -50,7 +50,7 @@ https://{{ hostname }}:{{ port }} {
 SCENARIOS = ScenariosDict()
 
 SCENARIOS += Scenario(
-    id="external_search",
+    id="external_p6_t5_p6",
     name="External requests: Two sequences of searx requests, 0.5s in between",
     tries=10,
     local_ca=False,
@@ -80,7 +80,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="6_2seq_8kb",
+    id="p6-8-5_t5_p6-8-5",
     name="Two sequences of 6 requests with a 8KB responses (various delays), 0.5s in between",
     tries=10,
     local_ca=True,
@@ -110,7 +110,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="6_2seq_400kb",
+    id="p6-400-5_t5_p6-400-5",
     name="Two sequences of 6 requests with a 400KB responses (various delays), 0.5s in between",
     tries=10,
     local_ca=True,
@@ -141,7 +141,7 @@ SCENARIOS += Scenario(
 
 
 SCENARIOS += Scenario(
-    id="100_2seq_2kb",
+    id="p100-2-5_t5_p100-2-5",
     name="Two sequences of 100 parallel requests (various delays), 0.5s in between",
     tries=10,
     local_ca=True,
@@ -171,7 +171,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="1_100seq_1",
+    id="s100_1_0",
     name="100 sequential requests, 1 byte response, 0 delay",
     tries=10,
     local_ca=True,
@@ -179,7 +179,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="1_100seq_2kb",
+    id="s100_2_0",
     name="100 sequential requests, 2KB response, 0 delay",
     tries=10,
     local_ca=True,
@@ -187,7 +187,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="1_100seq_256kb",
+    id="s100_256_0",
     name="100 sequential requests, 256KB response, 0 delay",
     tries=10,
     local_ca=True,
@@ -195,7 +195,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="1_100seq_1mb",
+    id="s100_1024_0",
     name="100 sequential requests, 1MB response, 0 delay",
     tries=10,
     local_ca=True,
@@ -203,7 +203,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="1_30seq_8kb_400ms",
+    id="s30_8_4",
     name="30 sequential requests, 8KB response, 400ms delay",
     tries=10,
     local_ca=True,
@@ -211,7 +211,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="30_1seq_8kb_400ms",
+    id="s30_8_4",
     name="One sequence of 30 requests, 8KB response, 400ms delay",
     tries=10,
     local_ca=True,
@@ -243,7 +243,7 @@ ONE_HUNDRED_REQUESTS = [
     ] * 5
 
 SCENARIOS += Scenario(
-    id="100_2seq",
+    id="p100_2048_5_t20_p100_2048_5",
     name="2 sequences of 100 requests, between 2KB and 2MB responses (various delays), 2s in between",
     tries=10,
     local_ca=True,
@@ -251,7 +251,7 @@ SCENARIOS += Scenario(
 )
 
 SCENARIOS += Scenario(
-    id="60_1seq_1mb",
+    id="p60_1024_5",
     name="60 requests, 1MB response (various delays)",
     tries=10,
     local_ca=True,
