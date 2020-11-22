@@ -27,7 +27,7 @@ HANDLED_SIGNALS = (
     signal.SIGTERM,  # Unix signal 15. Sent by `kill <pid>`.
 )
 
-APP_HOSTNAME = "localhost"
+APP_HOSTNAME = "127.0.0.1"
 APP_PORT = 5000
 
 process_app: typing.Optional[multiprocessing.context.SpawnProcess] = None
@@ -136,6 +136,10 @@ def start(server_config: model.ServerConfig, caddy_log_file, certificates: model
     wait_for_url(f"http://{APP_HOSTNAME}:{APP_PORT}/0/1", certificates, 5)
     for port in port_range:
         wait_for_url(f"https://{hostname}:{port}/0/1", certificates, 5)
+
+    # check that the app is still running (another app on the same port is not running)
+    if not process_app.is_alive():
+      raise Exception('app has failed to start, the port is already bound')
 
 
 @contextlib.contextmanager

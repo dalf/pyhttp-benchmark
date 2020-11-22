@@ -29,7 +29,7 @@ app = Starlette(debug=True, routes=[Route("/{delay:int}/{size:int}", answer), ])
 
 
 def main(host, port):
-    uvicorn.run("pyhttpbenchmark.server.app:app", host=host, port=port, log_level="error", workers=4)
+    uvicorn.run("pyhttpbenchmark.server.app:app", host=host, port=port, log_level="error")
 
 
 if __name__ == "__main__":
