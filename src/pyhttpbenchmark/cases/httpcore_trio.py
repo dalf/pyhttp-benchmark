@@ -22,7 +22,7 @@ async def get(url, transport):
     port = urlobj.port
     full_path = urlobj.target()
 
-    http_version, status_code, status_phrase, headers, stream = await transport.request(
+    status_code, headers, stream, ext = await transport.arequest(
         method=b"GET",
         url=(scheme, host, port, full_path),
         headers=[(b"host", urlobj.host_header())],

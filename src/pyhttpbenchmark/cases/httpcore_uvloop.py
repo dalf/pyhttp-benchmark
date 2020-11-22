@@ -2,7 +2,7 @@ import ssl
 from .. import model
 from ..case import async_record_measure
 
-import curio
+import asyncio
 import httpcore
 import irl  # type: ignore
 
@@ -22,7 +22,7 @@ async def get(url, transport):
     port = urlobj.port
     full_path = urlobj.target()
 
-    http_version, status_code, status_phrase, headers, stream = await transport.request(
+    status_code, headers, stream, ext = await transport.arequest(
         method=b"GET",
         url=(scheme, host, port, full_path),
         headers=[(b"host", urlobj.host_header())],
@@ -36,17 +36,18 @@ async def get(url, transport):
     return content
 
 
-async def step_delay(g, step, transport):
-    await curio.sleep(step.time)
+async def step_delay(step, transport):
+    await asyncio.sleep(step.time)
+    return []
 
 
-async def step_requests(g, step, transport):
-    for url in step.urls:
-        await g.spawn(get, url, transport)
+async def step_requests(step, transport):
+    return [asyncio.create_task(get(url, transport)) for url in step.urls]
 
 
-async def step_request(g, step, transport):
+async def step_request(step, transport):
     await get(step.url, transport)
+    return []
 
 
 handlers: dict = {
@@ -72,6 +73,7 @@ async def main(scenario: model.Scenario, sslconfig: model.SslConfig,
     )
     async with httpcore.AsyncConnectionPool(http2=http2, ssl_context=ssl_context) as transport:
         async with async_record_measure():
-            async with curio.TaskGroup() as g:
-                for step in scenario.steps:
-                    await handlers[step.__class__](g, step, transport)
+            tasks = []
+            for step in scenario.steps:
+                tasks += await handlers[step.__class__](step, transport)
+            await asyncio.gather(*tasks)
