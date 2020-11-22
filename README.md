@@ -27,7 +27,7 @@ eval "$(_PYHTTPBENCHMARK_COMPLETE=source_bash pyhttpbenchmark )"
 pyhttpbenchmark run . .
 ```
 
-See the [output](output.md).
+See the [output](results/output.md).
 
 ```sh
 # display available cases and scenarios
