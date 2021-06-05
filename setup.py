@@ -27,7 +27,7 @@ setup(
         "snakeviz==2.*",
         "tqdm==4.*",
         "dataclasses==0.*; python_version<'3.7'",
-        "Jinja2==2.*",
+        "Jinja2==3.*",
         "irl==0.2",
     ],
     extras_require = {
