@@ -14,7 +14,7 @@ setup(
     },
     install_requires=[
         "aiohttp[speedups]==3.*",
-        "httpx==0.*",
+        "httpx[http2]==0.*",
         "requests==2.*",
         "uvloop==0.*",
         "trio==0.*",
