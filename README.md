@@ -18,6 +18,9 @@ In a virtualenv:
 # install
 pip install -e git+https://github.com/dalf/pyhttp-benchmark#egg=pyhttpbenchmark
 
+# or if you want to use --png option (see below), add the graph extra:
+# pip install -e git+https://github.com/dalf/pyhttp-benchmark#egg=pyhttpbenchmark[graph]
+
 # install shell completion
 eval "$(_PYHTTPBENCHMARK_COMPLETE=source_bash pyhttpbenchmark )"
 
@@ -35,14 +38,14 @@ pyhttpbenchmark show cases
 pyhttpbenchmark show scenarios
 
 # run some cases and some scenarios
-pyhttpbenchmark run httpx,httpx_11 100_2seq_2kb,1_30seq_8kb_400ms
+pyhttpbenchmark run httpx_uvloop s100_1_0,p60_1024_5
 
 # run one case with one scenario
 # record .prof, .csv files and create graph store as .png file (require matplotlib)
-pyhttpbenchmark run --png --csv --profile httpx 1_100seq_1mb
+pyhttpbenchmark run --png --csv --profile httpcore_uvloop s100_1_0
 
 # view .prof file using snakeviz
-pyhttpbenchmark view httpx 1_100seq_1mb
+pyhttpbenchmark view httpcore_uvloop_anyio_http2 s100_1_0
 
 # custom cases
 wget https://gist.githubusercontent.com/dalf/cebb2032578151357b8c9ab2a320b51f/raw/dab40e925ced12738cc6f69c61b43a2d20f0c509/httpx_trio.py
