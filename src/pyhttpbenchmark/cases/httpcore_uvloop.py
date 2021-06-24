@@ -3,6 +3,12 @@ from .. import model
 from ..case import async_record_measure
 
 import asyncio
+
+import h11
+import h2
+import hpack
+import hyperframe
+
 import httpcore
 import irl  # type: ignore
 
@@ -62,18 +68,19 @@ handlers: dict = {
 def get_parameters():
     parameters = []
     for http2 in [True, False]:
-        parameters.append((http2,))
-    return ('http2', parameters)
+        for backend in ['asyncio', 'anyio']:
+            parameters.append((backend, http2))
+    return ('backend, http2', parameters)
 
 
 async def main(scenario: model.Scenario, sslconfig: model.SslConfig,
-               http2: bool = True) -> None:
+               backend: str = '', http2: bool = True) -> None:
     ssl_context = (
         ssl.create_default_context(cafile=str(sslconfig.local_ca_file))
         if scenario.local_ca
         else None
     )
-    async with httpcore.AsyncConnectionPool(http2=http2, ssl_context=ssl_context) as transport:
+    async with httpcore.AsyncConnectionPool(http2=http2, ssl_context=ssl_context, backend=backend) as transport:
         async with async_record_measure():
             tasks = []
             for step in scenario.steps:
