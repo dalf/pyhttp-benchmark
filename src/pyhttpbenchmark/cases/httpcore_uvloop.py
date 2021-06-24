@@ -4,13 +4,11 @@ from ..case import async_record_measure
 
 import asyncio
 
-import h11
-import h2
-import hpack
-import hyperframe
-
-import httpcore
 import irl  # type: ignore
+
+# make sure there is no import during the benchmark
+import httpcore._async.http2
+import stringprep
 
 
 """
@@ -67,19 +65,20 @@ handlers: dict = {
 
 def get_parameters():
     parameters = []
-    for http2 in [True, False]:
+    for http2 in ['http2', 'http1']:
         for backend in ['asyncio', 'anyio']:
             parameters.append((backend, http2))
     return ('backend, http2', parameters)
 
 
 async def main(scenario: model.Scenario, sslconfig: model.SslConfig,
-               backend: str = '', http2: bool = True) -> None:
+               backend: str = 'asyncio', http2: str = 'http1') -> None:
     ssl_context = (
         ssl.create_default_context(cafile=str(sslconfig.local_ca_file))
         if scenario.local_ca
         else None
     )
+    http2 = http2 == 'http2'
     async with httpcore.AsyncConnectionPool(http2=http2, ssl_context=ssl_context, backend=backend) as transport:
         async with async_record_measure():
             tasks = []

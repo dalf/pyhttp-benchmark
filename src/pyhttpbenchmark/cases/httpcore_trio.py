@@ -6,6 +6,10 @@ import trio
 import httpcore
 import irl  # type: ignore
 
+# make sure there is no import during the benchmark
+import httpcore._async.http2
+import stringprep
+
 
 """
 httpcore
@@ -60,18 +64,19 @@ handlers: dict = {
 
 def get_parameters():
     parameters = []
-    for http2 in [True, False]:
+    for http2 in ['http2', 'http1']:
         parameters.append((http2,))
     return ('http2', parameters)
 
 
 async def main(scenario: model.Scenario, sslconfig: model.SslConfig,
-               http2: bool = True) -> None:
+               http2: str = 'http1') -> None:
     ssl_context = (
         ssl.create_default_context(cafile=str(sslconfig.local_ca_file))
         if scenario.local_ca
         else None
     )
+    http2 = http2 == 'http2'
     async with httpcore.AsyncConnectionPool(http2=http2, ssl_context=ssl_context) as transport:
         async with async_record_measure():
             async with trio.open_nursery() as nursery:
