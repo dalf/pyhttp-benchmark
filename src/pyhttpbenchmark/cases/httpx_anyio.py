@@ -4,7 +4,7 @@ from ..case import async_record_measure
 
 import asyncio
 import httpx
-import anyio  # enable anyio
+import anyio
 
 # make sure there is no import during the benchmark
 import httpcore._async.http2
