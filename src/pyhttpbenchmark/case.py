@@ -7,6 +7,7 @@ import importlib
 import inspect
 import time
 import pickle
+import asyncio
 
 if not sys.version_info.major == 3 and sys.version_info.minor >= 7:
     from contextlib import asynccontextmanager
@@ -87,10 +88,7 @@ def _no_gc() -> typing.Generator[None, None, None]:
 
 def _call_async_main(main, *args, **kwargs) -> None:
     import asyncio
-    import uvloop  # type: ignore
-
-    uvloop.install()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     with _no_gc():
         loop.run_until_complete(main(*args, **kwargs))
 
@@ -111,7 +109,18 @@ def _call_curio_main(main, *args, **kwargs) -> None:
     async def main_args_kwargs():
         await main(*args, **kwargs)
 
-    curio.run(main_args_kwargs, with_monitor=True)
+    with _no_gc():
+        curio.run(main_args_kwargs, with_monitor=True)
+
+
+def _call_anyio_main(main, *args, **kwargs) -> None:
+    import anyio
+
+    async def main_args_kwargs():
+        await main(*args, **kwargs)
+
+    with _no_gc():
+        anyio.run(main_args_kwargs, backend='asyncio')
 
 
 def _call_sync_main(main, *args, **kwargs) -> None:
@@ -138,12 +147,17 @@ def run(measure_filename: str, stats_filename: str, case: model.LoadedCase, scen
     main = module.main
     if not inspect.iscoroutinefunction(main):
         call_main = _call_sync_main
-    elif 'trio' in sys.modules:
-        call_main = _call_trio_main
-    elif 'curio' in sys.modules:
-        call_main = _call_curio_main
     else:
-        call_main = _call_async_main
+        asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
+        caller = getattr(module, 'main_caller', 'asyncio')
+        if caller == 'trio':
+            call_main = _call_trio_main
+        elif caller == 'anyio':
+            call_main = _call_anyio_main
+        elif caller == 'asyncio':
+            call_main = _call_async_main
+        else:
+            raise ValueError('Unknow caller ' + caller)
 
     call_main(main, scenario, sslconfig, **kwargs)
 

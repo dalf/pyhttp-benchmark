@@ -170,7 +170,7 @@ def run(profile, csv, png, tries, case_list, scenario_list) -> None:
     # intro
     print("## Versions\n")
     print("* %-30s %s" % ("Python", sys.version.replace("\n", "")))
-    for pkg in ["aiohttp", "httpx", "httpcore", "requests", "uvloop", "trio", "curio", "anyio"]:
+    for pkg in ["aiohttp", "httpx", "httpcore", "anyio", "trio", "requests"]:
         print("* %-30s %s" % (pkg, pkg_resources.get_distribution(pkg).version))
     if len(case_list) > 1 or len(scenario_list) > 1:
         print("\n## Context\n")

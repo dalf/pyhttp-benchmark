@@ -10,6 +10,8 @@ from ..case import async_record_measure
 aiohttp
 """
 
+main_caller = 'asyncio'
+
 
 async def get(session, sslparam, url):
     async with session.get(url, ssl=sslparam) as response:
